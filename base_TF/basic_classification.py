@@ -43,7 +43,7 @@ plt.show()
 
 # 构建模型
 model = keras.Sequential([
-    # 转化为1维数组
+    # tf.keras.layers.Flatten,将图像格式从一个二维数组(包含着28x28个像素)转换成为一个包含着28 * 28 = 784个像素的一维数组。
     keras.layers.Flatten(input_shape=(28, 28)),  
     keras.layers.Dense(128, activation=tf.nn.relu),
     keras.layers.Dense(10, activation=tf.nn.softmax)
@@ -63,7 +63,7 @@ model.compile(optimizer='adam',
 # 2.模型学习如何将图像与其标签关联
 # 3.我们使用模型对测试集进行预测, 在本案例中为test_images数组。我们验证预测结果是否匹配test_labels数组中保存的标签。
 # 通过调用model.fit方法来训练模型 — 模型对训练数据进行"拟合"。
-model.fit(train_images, train_labels, epochs=5)
+model.fit(train_images, train_labels, epochs=5)    # train_images的shape为6000*28*28
 
 # 评估准确率（测试集）
 test_loss, test_acc = model.evaluate(test_images, test_labels)
@@ -115,6 +115,18 @@ for i in range(num_images):
     plt.subplot(num_rows, 2*num_cols, 2*i+2)
     plot_value_array(i, predictions, test_labels)
 plt.show()
+
+'''
+# 预测单个图像
+# 从测试数据集中获取图像
+img = test_images[0]   # shape为28*28
+# 将图像添加到批次中，即使它是唯一的成员。
+img = (np.expand_dims(img,0))   # shape为1*28*28
+# 预测图像
+print(img)
+predictions_single = model.predict(img)
+print(predictions_single)
+'''
 
 
 
