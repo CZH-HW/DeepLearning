@@ -13,8 +13,7 @@ from tensorflow import keras
 import numpy as np
 import matplotlib.pyplot as plt
 import os
-os.environ["KMP_DUPLICATE_LIB_OK"]="TRUE"
-
+os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
 
 # 加载数据
@@ -71,6 +70,8 @@ print('Test accuracy:', test_acc)
 
 # 进行预测
 predictions = model.predict(test_images)
+
+
 # 用图表来查看全部10个类别
 def plot_image(i, predictions_array, true_label, img):
     predictions_array, true_label, img = predictions_array[i], true_label[i], img[i]
@@ -85,10 +86,11 @@ def plot_image(i, predictions_array, true_label, img):
     else:
         color = 'red'
   
-    plt.xlabel("{} {:2.0f}% ({})".format(class_names[predicted_label],
-                                100*np.max(predictions_array),
-                                class_names[true_label]),
-                                color=color)
+    plt.xlabel("{} {:2.0f}% ({})".format(class_names[predicted_label], 
+                                        100*np.max(predictions_array),
+                                        class_names[true_label]),
+                                        color=color)
+
 
 def plot_value_array(i, predictions_array, true_label):
     predictions_array, true_label = predictions_array[i], true_label[i]

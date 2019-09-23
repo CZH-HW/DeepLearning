@@ -1,5 +1,5 @@
-<<<<<<< HEAD
-[深度学习]目录
+
+[深度学习笔记]目录
 [TOC]
 
 # 深度学习
@@ -91,7 +91,7 @@
 
    函数图像如下：
 
-![](./img/3-26.png)
+![sigmoid函数图像](https://github.com/CZH-HW/CloudImg/raw/master/NoteDL/sigmoid_func.png)
 
 2. tanh激活函数
 
@@ -99,7 +99,7 @@
 
    函数图像如下：
 
-![](./img/3-27.png)
+![](https://github.com/CZH-HW/CloudImg/raw/master/NoteDL/tanh_func.png)
 
 3. Relu激活函数
 
@@ -107,7 +107,7 @@
 
    函数图像如下：
 
-![](./img/3-28.png)
+![](https://github.com/CZH-HW/CloudImg/raw/master/NoteDL/relu_func.png)
 
 4. Leaky Relu 激活函数 
 
@@ -120,7 +120,7 @@
 
    图像如下（$ a = 0.5 $）：
 
-![](./img/3-29.png)
+![](https://github.com/CZH-HW/CloudImg/raw/master/NoteDL/leaky_relu_func.png)
 
 5. SoftPlus 激活函数
 
@@ -128,7 +128,7 @@
 
    函数图像如下:
 
-![](./img/3-30.png)
+![](https://github.com/CZH-HW/CloudImg/raw/master/NoteDL/Softplus_func.png)
 
 6. softmax 函数
 
@@ -183,7 +183,7 @@
 
 Relu 激活函数图像如下：
 
-![](./img/3-32.png)
+![](https://github.com/CZH-HW/CloudImg/raw/master/NoteDL/relu_func.png)
 
 根据图像可看出具有如下特点：
 
@@ -231,15 +231,15 @@ $$
 
 ​从下图看，神经网络中包含了输入层，然后通过两个特征层处理，最后通过 softmax 分析器就能得到不同条件下的概率，这里需要分成三个类别，最终会得到 $ y=0, y=1, y=2 $ 的概率值。
 
-![](./img/3.4.9.1.png)
+![](https://github.com/CZH-HW/CloudImg/raw/master/NoteDL/softmax_1.png)
 
 继续看下面的图，三个输入通过 softmax 后得到一个数组 $ [0.05 , 0.10 , 0.85] $，这就是 soft 的功能。
 
-![](./img/3.4.9.2.png)
+![](https://github.com/CZH-HW/CloudImg/raw/master/NoteDL/softmax_2.png)
 
 更形象的映射过程如下图所示：
 
-![****](./img/3.4.9.3.png)
+![](https://github.com/CZH-HW/CloudImg/raw/master/NoteDL/softmax_3.png)
 
 ​softmax 直白来说就是将原来输出是 $ 3,1,-3 $ 通过 softmax 函数一作用，就映射成为 $ (0,1) $ 的值，而这些值的累和为 $ 1 $（满足概率的性质），那么我们就可以将它理解成概率，在最后选取输出结点的时候，我们就可以选取概率最大（也就是值对应最大的）结点，作为我们的预测目标！
 
