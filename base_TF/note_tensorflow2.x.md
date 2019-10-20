@@ -199,11 +199,56 @@ print([L.numpy(), w_grad.numpy(), b_grad.numpy()])
 TensorFlow 中有大量的张量操作 API，包括数学运算、张量形状操作（如 tf.reshape()）、切片和连接（如 tf.concat()）等多种类型，可以通过查阅 TensorFlow 的官方 API 文档来进一步了解。
 
 
+使用常规的科学计算库实现机器学习模型有两个痛点：
+
+1. 经常需要手工求函数关于参数的偏导数。如果是简单的函数或许还好，但一旦函数的形式变得复杂（尤其是深度学习模型），手工求导的过程将变得非常痛苦，甚至不可行。
+
+2. 经常需要手工根据求导的结果更新参数。这里使用了最基础的梯度下降方法，因此参数的更新还较为容易。但如果使用更加复杂的参数更新方法（例如 Adam 或者 Adagrad），这个更新过程的编写同样会非常繁杂。
+<br>
 
 
+tensorflow 下的线性回归
 
-#### 
+TensorFlow 的 Eager Execution（动态图）模式与 NumPy 的运行方式十分类似，然而提供了更快速的运算（GPU 支持）、自动求导、优化器等一系列对深度学习非常重要的功能。以下展示了如何使用 TensorFlow 计算线性回归。可以注意到，程序的结构和 NumPy 的实现非常类似。这里，TensorFlow 帮助我们做了两件重要的工作：
 
+- 使用`tape.gradient(ys, xs)`自动计算梯度；
+- 使用`optimizer.apply_gradients(grads_and_vars)`自动更新模型参数。
+
+```python
+# 生成数据
+X = tf.constant(X)
+y = tf.constant(y)
+
+# 模型参数初始化
+a = tf.Variable(initial_value=0.)
+b = tf.Variable(initial_value=0.)
+variables = [a, b]
+
+num_epoch = 10000   # 迭代次数
+optimizer = tf.keras.optimizers.SGD(learning_rate=1e-3)  # SGD：随机梯度下降算法
+
+for e in range(num_epoch):
+    # 使用tf.GradientTape()记录损失函数的梯度信息
+    with tf.GradientTape() as tape:
+        y_pred = a * X + b
+        loss = 0.5 * tf.reduce_sum(tf.square(y_pred - y))
+    # TensorFlow自动计算损失函数关于自变量（模型参数）的梯度
+    grads = tape.gradient(loss, variables)
+    # TensorFlow自动根据梯度更新参数
+    optimizer.apply_gradients(grads_and_vars=zip(grads, variables))  
+    # 优化器可以帮助我们根据计算出的求导结果更新模型参数，从而最小化某个特定的损失函数
+    # 具体使用方式是调用其 apply_gradients() 方法。
+
+print(a, b)
+```
+
+注意到这里，更新模型参数的方法`optimizer.apply_gradients()`需要提供参数`grads_and_vars`，即待更新的变量（如上述代码中的`variables`）及损失函数关于这些变量的偏导数（如上述代码中的`grads`）。
+
+具体而言，这里需要传入一个 Python 列表（List），列表中的每个元素是一个 （变量的偏导数，变量） 对。比如这里是`[(grad_a, a), (grad_b, b)]`。我们通过`grads = tape.gradient(loss, variables)`求出 tape 中记录的 loss 关于 variables = [a, b] 中每个变量的偏导数，也就是 grads = [grad_a, grad_b]，再使用 Python 的 zip() 函数将 grads = [grad_a, grad_b] 和 variables = [a, b] 拼装在一起，就可以组合出所需的参数了。
+
+`zip()`函数是 Python 的内置函数。用自然语言描述这个函数的功能很绕口，但如果举个例子就很容易理解了：如果`a = [1, 3, 5]， b = [2, 4, 6]`，那么`zip(a, b) = [(1, 2), (3, 4), ..., (5, 6)]`。即 “将可迭代的对象作为参数，将对象中对应的元素打包成一个个元组，然后返回由这些元组组成的列表”。在 Python 3 中， zip() 函数返回的是一个 zip 对象，本质上是一个生成器，需要调用 list() 来将生成器转换成列表。
+
+在实际应用中，我们编写的模型往往比这里一行就能写完的线性模型`y_pred = a * X + b`（模型参数为`variables = [a, b]`）要复杂得多。所以，我们往往会编写并实例化一个模型类`model = Model()`，然后使用`y_pred = model(X)`调用模型，使用`model.variables`获取模型参数。
 
 
 #### 2.7 不同维度 tensor 数据的典型应用
@@ -214,6 +259,88 @@ matrix 矩阵的典型应用
 dimension=3 的 tensor 应用：自燃语言处理
 dimension=4 的 tensor 应用：图片
 dimension=5 的 tensor 应用：meta-learning
+
+
+## tensorflow 模型建立与训练
+
+动态模型
+- 模型的构建：`tf.keras.Model` 和 `tf.keras.layers`
+
+- 模型的损失函数：`tf.keras.losses`
+
+- 模型的优化器：`tf.keras.optimizer`
+
+- 模型的评估：`tf.keras.metrics`
+
+
+### 模型（model）与层（layer）
+
+在 TensorFlow 中，推荐使用 Keras（tf.keras）构建模型。Keras 是一个广为流行的高级神经网络 API，简单、快速而不失灵活性，现已得到 TensorFlow 的官方内置和全面支持。
+
+Keras 有两个重要的概念： 模型（Model） 和 层（Layer） 。层将各种计算流程和变量进行了封装（例如基本的全连接层，CNN 的卷积层、池化层等），而模型则将各种层进行组织和连接，并封装成一个整体，描述了如何将输入数据通过各种层以及运算而得到输出。在需要模型调用的时候，使用`y_pred = model(X)`的形式即可。Keras 在`tf.keras.layers`下内置了深度学习中大量常用的的预定义层，同时也允许我们自定义层。
+
+Keras 模型以类的形式呈现，我们可以通过继承`tf.keras.Model`这个 Python 类来定义自己的模型。在继承类中，我们需要重写`__init__()`（构造函数，初始化）和`call(input)`（模型调用）两个方法，同时也可以根据需要增加自定义的方法。
+
+```python
+class MyModel(tf.keras.Model):
+    def __init__(self):
+        super().__init__()     # Python 2 下使用 super(MyModel, self).__init__()
+        # 此处添加初始化代码（包含 call 方法中会用到的层），例如
+        # layer1 = tf.keras.layers.BuiltInLayer(...)
+        # layer2 = MyCustomLayer(...)
+
+    def call(self, input):
+        # 此处添加模型调用的代码（处理输入并返回输出），例如
+        # x = layer1(input)
+        # output = layer2(x)
+        return output
+
+    # 还可以添加自定义的方法
+```
+
+继承 tf.keras.Model 后，我们同时可以使用父类的若干方法和属性，例如在实例化类 model = Model() 后，可以通过 model.variables 这一属性直接获得模型中的所有变量，免去我们一个个显式指定变量的麻烦。
+<br>
+
+简单的线性模型`y_pred = a * X + b`，我们可以通过模型类的方式编写如下：
+
+```python
+import tensorflow as tf
+
+X = tf.constant([[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]])
+y = tf.constant([[10.0], [20.0]])
+
+
+class Linear(tf.keras.Model):
+    def __init__(self):
+        super().__init__()
+        self.dense = tf.keras.layers.Dense(
+            units=1,
+            activation=None,
+            kernel_initializer=tf.zeros_initializer(),
+            bias_initializer=tf.zeros_initializer()
+        )
+
+    def call(self, input):
+        output = self.dense(input)
+        return output
+
+
+# 以下代码结构与前节类似
+model = Linear()
+optimizer = tf.keras.optimizers.SGD(learning_rate=0.01)
+for i in range(100):
+    with tf.GradientTape() as tape:
+        y_pred = model(X)      # 调用模型 y_pred = model(X) 而不是显式写出 y_pred = a * X + b
+        loss = tf.reduce_mean(tf.square(y_pred - y))
+    grads = tape.gradient(loss, model.variables)    # 使用 model.variables 这一属性直接获得模型中的所有变量
+    optimizer.apply_gradients(grads_and_vars=zip(grads, model.variables))
+print(model.variables)
+```
+
+
+
+
+
 
 
 
